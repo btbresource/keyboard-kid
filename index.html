@@ -1,0 +1,643 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        * {
+            margin,
+            padding: 0px;
+            font-family: 'Tahoma';
+        }
+
+        #main-container {
+            width: 100%;
+        }
+
+        .game-box {
+            margin: 0px auto;
+            display: block;
+            width: 80%;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 2px solid green;
+        }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="practice.css">
+    <script type='text/javascript' src='jquery-3.4.1.min.js'></script>
+    <script>
+        $(function () {
+            //start
+            init();
+        });
+        var words = ['apple', 'bear', 'banana', 'girl', 'boy', 'beer', 'fast', 'ant', 'ball', 'foot', 'tree', 'sun', 'moon']
+        function getCurrentWord() {
+            let idx = ~~((Math.random() * words.length - 1));
+            let word = words[idx];
+            words.splice(idx, 1)
+            showPicture(word);
+            return word;
+        }
+
+        var lastKey = null;
+        function updateKeyboard(keycode) {
+            if (lastKey) {
+                lastKey.removeClass('key_hint');
+            }
+            var a = $('.c' + keycode);
+            a.addClass('key_hint')
+            lastKey = a;
+        }
+
+        function playKeySound(letter) {
+            console.log('play sound for ' + letter)
+            var name = letter.toLowerCase();
+            var sound = new Audio("sounds/" + name + ".mp3")
+            sound.play()
+        }
+
+        function playMiss() {
+            var sound = new Audio("sounds/no.mp3")
+            sound.play()
+        }
+
+        function playDead() {
+            var sound = new Audio("sounds/dead.mp3")
+            sound.play()
+        }
+        function showPicture(word) {
+            $('#pic').attr('src', 'assets/pj.jpg')
+            //  $('#word').text(word)
+        }
+        function init() {
+            window.document.addEventListener("keydown", function (e) {
+                if (e.keyCode >= 48 && e.keyCode <= 90 || e.keyCode == 32) {
+                    var c = String.fromCharCode(e.keyCode);
+                    console.log('typed ' + c)
+                    __evaluateKey(c);
+                }
+            }, true);
+        }
+
+    </script>
+
+</head>
+
+<body>
+
+    <div id="main-container">
+        <div>
+            <button onclick="start()">START</button>
+            <img id='pic' style='width: 100px;height: 80;'>
+            <!-- <span id='word' style="font-size: 20px"></span> -->
+        </div>
+        <div class="game-box">
+            <canvas id="game-canvas" width="800px" height="300px"></canvas>
+        </div>
+        <div id="keyboard_container" style="margin: 10px auto; text-align: center; width: 790px;">
+            <div id="keyboard">
+                <ul id="numbers">
+                    <li>
+                        <a tabindex="-1" class="key c192 left">
+                            <b>~</b>
+                            <span>`</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c49 c33 left">
+                            <b>!</b>
+                            <span>1</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c50 left">
+                            <b>@</b>
+                            <span>2</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c51 left">
+                            <b>#</b>
+                            <span>3</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c52 left">
+                            <b>$</b>
+                            <span>4</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c53 left">
+                            <b>%</b>
+                            <span>5</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c54">
+                            <b>^</b>
+                            <span>6</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c55 right">
+                            <b>&amp;</b>
+                            <span>7</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c56 right">
+                            <b>*</b>
+                            <span>8</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c57 right">
+                            <b>(</b>
+                            <span>9</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c48 right">
+                            <b>)</b>
+                            <span>0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c189 alt right">
+                            <b>_</b>
+                            <span>-</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c187 right">
+                            <b>+</b>
+                            <span>=</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c8 right" id="delete">
+                            <span>Delete</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="qwerty">
+                    <li>
+                        <a class="key c9 left" id="tab">
+                            <span>tab</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c81 left">
+                            <span>q</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c87 left">
+                            <span>w</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c69 left">
+                            <span>e</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c82 left">
+                            <span>r</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c84 left">
+                            <span>t</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c89 right">
+                            <span>y</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c85 right">
+                            <span>u</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c73 right">
+                            <span>i</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="key_c79" class="key c79 right">
+                            <span>o</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c80 right">
+                            <span>p</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c219 alt right">
+                            <b>{</b>
+                            <span>[</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c221 alt right">
+                            <b>}</b>
+                            <span>]</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c220 alt right">
+                            <b>|</b>
+                            <span>\</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="asdfg">
+                    <li>
+                        <a tabindex="-1" class="key c20 alt left" id="caps">
+                            <b></b>
+                            <span>caps lock</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c65 left">
+                            <span>a</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c83 left">
+                            <span>s</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c68 left">
+                            <span>d</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c70 left">
+                            <span style="display: inline-block; border-bottom: 1px solid #c1c1c1;">f</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c71 left">
+                            <span>g</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c72 right">
+                            <span>h</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c74 right">
+                            <span style="display: inline-block; border-bottom: 1px solid #c1c1c1;">j</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c75 right">
+                            <span>k</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c76 right">
+                            <span>l</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c186 alt right">
+                            <b>:</b>
+                            <span>;</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c222 alt right">
+                            <b>"</b>
+                            <span>'</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a tabindex="-1" class="key c13 alt right" id="enter">
+                            <span>return</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="zxcvb">
+                    <li>
+                        <a class="key c16 shiftleft left">
+                            <span>Shift</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c90 left">
+                            <span>z</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c88 left">
+                            <span>x</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c67 left">
+                            <span>c</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c86 left">
+                            <span>v</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c66 right">
+                            <span>b</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c78 right">
+                            <span>n</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c77 right">
+                            <span>m</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c188 alt right">
+                            <b>&lt;</b>
+                            <span>,</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c190 alt right">
+                            <b>&gt;</b>
+                            <span>.</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c191 alt right">
+                            <b>?</b>
+                            <span>/</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c16 shiftright right">
+                            <span>Shift</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="bottomrow">
+                    <!--<li><a href="#" class="key" id="fn"><span>ctrl</span></a></li>-->
+                    <li>
+                        <a class="key c17" id="control">
+                            <span>ctrl</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key option" id="optionleft">
+                            <span>alt</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key command" id="commandleft">
+                            <span>cmd</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c32" id="spacebar"></a>
+                    </li>
+                    <li>
+                        <a class="key command" id="commandright">
+                            <span>cmd</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key option" id="optionright">
+                            <span>alt</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="key c17" id="controlright">
+                            <span>ctrl</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="keyboard_container_small_screen" style="margin: 10px auto; text-align: center;">
+            <p>Keyboard assistant not available.<br>The screen resolution is too small.</p>
+        </div>
+
+    </div>
+    <script type="text/javascript">
+        var AppGame = (function (window, canvas, undefined) {
+            var max_width = canvas.width,
+                max_height = canvas.height,
+                current_challenge;
+
+            var ctx = canvas.getContext('2d');
+            ctx.font = 'bold 40px Courier';
+
+            var letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ    ",
+                word_max = 8,
+                word_min = 5,
+                level = 0,
+                char_px = ctx.measureText("X").width,
+                score = 0,
+                letter_delay = 50,
+                min_letter_delay = 20;
+            game_started = true,
+                deathSound = new Audio("assets/GameOver.wav"), // buffers automatically when created
+                hitLetterSound = new Audio("assets/beep.wav");
+
+            var Bullet = function (){
+                this.x = 400;
+                this.y = 200;
+            }   
+
+            Bullet.prototype.render = function () {
+                var x = (current_challenge.sequence[0].x + this.x) /2;
+                var y = (current_challenge.sequence[0].y + this.y) /2;
+                ctx.fillStyle = "green";
+                ctx.fillRect(x, y, 10, 13);
+            }
+
+            var LetterSprite = function (pos, x_start, char, charcode) {
+                this.character = char;// letters[~~((Math.random() * letters.length) - 1)];
+                this.keycode = charcode;
+                this.x = x_start + (char_px * pos);
+                this.y = 50;
+                this.color = "green";
+                this.pos = pos;
+            };
+
+            LetterSprite.prototype.render = function () {
+                ctx.fillStyle = "red";
+                if (this.pos == 0) {
+                    ctx.font = 'bold 45px Courier';
+                } else {
+                    ctx.font = 'bold 40px Courier';
+                }
+                if (this.character !== ' ') {
+                    ctx.fillText(this.character, this.x, this.y);
+                } else {
+                    ctx.fillRect(this.x + 2, this.y - 13, 10, 13);
+                }
+                ctx.stroke();
+                //
+                if (this.pos == 0) {
+                    //circle
+                    var x = this.x + 10;
+                    var y = this.y - 10;
+                    var radius = 35;
+                    var startAngle = 0;
+                    var endAngle = 2 * Math.PI;
+                    var counterClockwise = false;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, startAngle, endAngle, counterClockwise);
+                    ctx.lineWidth = 1;
+                    // line color
+                    ctx.strokeStyle = 'blue';
+                    ctx.stroke();
+                    //
+                    var image = new Image();
+                    image.onload = function () {
+                        ctx.drawImage(image, x, y);
+                    };
+                    image.src = "assets/pj.jpg";
+                }
+            }
+
+            var WordChallenge = function (appGame) {
+                this.app = appGame;
+                this.sequence = [];
+                this.currentLetter = null;
+                this.word = getCurrentWord().toUpperCase();
+                var len = this.word.length;//~~((Math.random() * word_max) + word_min - 1);
+                var x_start = 280;
+
+                for (var i = 0; i < len; i++) {
+                    var ll = new LetterSprite(i, x_start, this.word[i], this.word.charCodeAt(i));
+                    this.sequence.push(ll);
+                }
+
+                if (score % 10 === 0) {
+                    level++;
+                    word_max += 3;
+                    letter_delay -= 20;
+                    letter_delay = Math.max(letter_delay, min_letter_delay);
+                }
+
+                this.__interval = setInterval(function () {
+                    if (current_challenge.sequence.length > 0) {
+                        var curLet = current_challenge.sequence[0].character
+                        if (this.currentLetter !== curLet) {
+                            console.log('current letter=' + curLet)
+                            this.currentLetter = curLet;
+                            updateKeyboard(current_challenge.sequence[0].keycode)
+                            playKeySound(curLet);
+                        }
+                        current_challenge.sequence[0].y += 1.0;
+                    }
+                }, letter_delay);
+            };
+
+            WordChallenge.prototype.match = function (c) {
+                if (this.sequence[0].character === c) {
+                    this.sequence.splice(0, 1);
+                    score += 1;
+                    hitLetterSound.play();
+                } else {
+                    score -= 1;
+                    playMiss()
+                }
+            };
+
+            WordChallenge.prototype.checkDeadLetter = function () {
+                if (this.sequence[0].y > 300) {
+                    //__gameOver();
+                    playDead()
+                    this.sequence.splice(0, 1);
+                    score -= 1;
+                }
+            };
+            WordChallenge.prototype.render = function () {
+                for (var i in this.sequence) {
+                    this.sequence[i].render();
+                }
+                this.checkDeadLetter();
+            }
+
+            var app = {};
+            __evaluateKey = function (c) {
+                if (!running) {
+                    updateKeyboard(c.charCodeAt(0))
+					playKeySound(c)
+                }
+                current_challenge.match(c);
+            };
+            __gameOver = function () {
+                // game_started = false;
+                // deathSound.play();
+                // clearInterval(current_challenge.__interval);
+                // ctx.fillStyle = "red";
+                // ctx.fillText("GAME OVER", (max_width - ctx.measureText("GAME OVER").width) / 2, (max_height / 2) + 100);
+                // ctx.fillText("HIT REFRESH TO START AGAIN", (max_width - ctx.measureText("HIT REFRESH TO START AGAIN").width) / 2, (max_height / 2 + 20 + 100));
+
+                // var image = new Image();
+                // image.onload = function () {
+                //     ctx.drawImage(image, 310, 50);
+                // };
+                // image.src = "assets/zombie.jpg";
+            }
+
+            app.StartGame = function () {
+                game_started = true;
+                current_challenge = new WordChallenge();
+                this.Render();
+            };
+
+            app.Render = function () {
+                if (game_started) {
+                    ctx.save();
+                    ctx.clearRect(0, 0, max_width, max_height);
+                    if (current_challenge.sequence.length == 0) {
+                        clearInterval(current_challenge.__interval);
+                        current_challenge = new WordChallenge(this);
+                        console.log('start new' + current_challenge.sequence[0])
+                    }
+                    current_challenge.render();
+                    ctx.fillStyle = "green";
+                    ctx.fillText("分数: " + score, 0, 30);
+                    //ctx.fillText("水平: "+ level, 0, 40);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(0, 300, max_width, 10);
+                    ctx.restore();
+                    window.requestAnimationFrame(AppGame.Render);
+                    //draw bullet
+                    var bullet = new Bullet()
+                    bullet.render()
+                }
+            };
+            return app;
+        }(window, document.getElementById('game-canvas'), undefined));
+        var running = false;
+        function start() {
+            if (!running) {
+                AppGame.StartGame();
+            }
+            running = true
+        }
+    </script>
+</body>
+
+</html>
